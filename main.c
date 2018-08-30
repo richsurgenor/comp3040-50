@@ -12,19 +12,19 @@ signed char count = 0;
 /* Counter function - decade up/down counter between 0 & 9 */
 /* Green LED = counting up, Blue LED = counting down */
 /*---------------------------------------------------*/
-void counting () {
+void counting (unsigned char *sw2) {
 	if (!sw2) { 									 //sw2 on?
 			 GPIOC->BSRR = 0x0100 << 16; //Reset PC8=0 and turn off blue LED
 			 GPIOC->BSRR = 0x0200; //Set PC9=1 and turn on green LED
 			 count++;              //Increment counter
-			 if ( count > 9 && sw2 == 0 ) { //Cycle back to 0 if incrementing
+			 if ( count > 9 && *sw2 == 0 ) { //Cycle back to 0 if incrementing
 			 count = 0;
 		  }
 		 } else {                      //sw2 is on
 			 GPIOC->BSRR = 0x0200 << 16; //Reset PC9=0 and turn off green LED
 			 GPIOC->BSRR = 0x0100; //Set PC8=1 and turn on blue LED
 			 count--;              //decrement counter
-			 if ( count < 0 && sw2 == 4 ) { //Cycle back to 9 if decrementing
+			 if ( count < 0 && *sw2 == 4 ) { //Cycle back to 9 if decrementing
 			 count = 9;
 		  }
 		 }
@@ -76,9 +76,10 @@ int main(void) {
 	 while (~sw1) { //Wait for sw1 = 0 == PA1 = 0
 		 sw1 = GPIOA->IDR & 0x2; //Read GPIOA inputs and mask all but bit 1	 
 	 }
+	 
 	 sw2 = GPIOA->IDR & 0x4; //Read GPIOA inputs and mask all but bit 2
 	 
-	 counting();
+	 counting(&sw2);
 	 delay();
 	 
  } /* repeat forever */
