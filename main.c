@@ -6,13 +6,14 @@
 #include "STM32L1xx.h" /* Microcontroller information */
 
 /* Define global variables */
+signed char count = 0;
 
 /*---------------------------------------------------*/
 /* Counter function - decade up/down counter between 0 & 9 */
 /* Green LED = counting up, Blue LED = counting down */
 /*---------------------------------------------------*/
-void counting (unsigned char *sw2, signed char *count) {
-	if (!sw2) { 							     //sw2 on?
+void counting (unsigned char *sw2) {
+	if (sw2) { 							     //sw2 on?
 		GPIOC->BSRR = 0x0100 << 16;             //Reset PC8=0 and turn off blue LED
 		GPIOC->BSRR = 0x0200;                   //Set PC9=1 and turn on green LED
 		count++;                                //Increment counter
@@ -45,8 +46,6 @@ void delay () {
 
 
 int main(void) {
-	signed char count = 0;
-
 	unsigned char sw1 = 0; //state of sw1 (PA1)
 	unsigned char sw2 = 0; //state of sw2 (PA2)
 	
@@ -74,14 +73,13 @@ int main(void) {
 	/* Endless loop */
 	while (1) {  
 	 
-		while (~sw1) { //Wait for sw1 = 0 == PA1 = 0
-			sw1 = GPIOA->IDR & 0x2; //Read GPIOA inputs and mask all but bit 1	 
-		}
-		 
+		sw1 = GPIOA->IDR & 0x2; //Read GPIOA inputs and mask all but bit 1	 
 		sw2 = GPIOA->IDR & 0x4; //Read GPIOA inputs and mask all but bit 2
 		
-		counting(&sw2, &count);
-		delay();
+		if (sw1 == 0x2) {
+			counting(&sw2);
+			delay();
+		}
 	 
 	} /* repeat forever */
 } 
