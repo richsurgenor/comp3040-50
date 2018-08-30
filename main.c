@@ -13,18 +13,18 @@ signed char count = 0;
 /* Green LED = counting up, Blue LED = counting down */
 /*---------------------------------------------------*/
 void counting (unsigned char *sw2) {
-	if (sw2) { 							     //sw2 on?
+	if (!(*sw2)) { 							     //sw2 == 0? increment 
 		GPIOC->BSRR = 0x0100 << 16;             //Reset PC8=0 and turn off blue LED
 		GPIOC->BSRR = 0x0200;                   //Set PC9=1 and turn on green LED
 		count++;                                //Increment counter
-		if ( count > 9 && *sw2 == 0x0 ) {       //Cycle back to 0 if incrementing
+		if ( count > 9 ) {       //Cycle back to 0 if incrementing
 			count = 0;
 		}
-	} else {                                    //sw2 is on
+	} else {                                    //sw2==!0? decrement
 	    GPIOC->BSRR = 0x0200 << 16;             //Reset PC9=0 and turn off green LED
 	    GPIOC->BSRR = 0x0100;                   //Set PC8=1 and turn on blue LED
 	    count--;                                //decrement counter
-	    if ( count < 0 && *sw2 == 0x4 ) {       //Cycle back to 9 if decrementing
+	    if ( count < 0 ) {       //Cycle back to 9 if decrementing
 	    	count = 9;
 	    }
 	}
