@@ -1,34 +1,40 @@
 /*====================================================*/
 /* Hunter Walden and Rich Surgenor
 /* ELEC 3040/3050 - Lab 2, Program 1 */
-/* Description: Counts up or down depending on PA1-2 and outputs count on PC3-0
+/* Description: counter[0]s up or down depending on PA1-2 and outputs counter[0] on PC3-0
 /*====================================================*/
 #include "STM32L1xx.h" /* Microcontroller information */
 
 /* Define global variables */
-signed char count = 0;
+signed char counter[2];
+//igned char counter[0]
 
 /*---------------------------------------------------*/
-/* Counter function - decade up/down counter between 0 & 9 */
-/* Green LED = counting up, Blue LED = counting down */
+/* counter[0]er function - decade up/down counter[0]er between 0 & 9 */
+/* Green LED = counter[0]ing up, Blue LED = counter[0]ing down */
 /*---------------------------------------------------*/
 void counting (unsigned char *sw2) {
 	if (!(*sw2)) { 							     //sw2 == 0? increment 
 		GPIOC->BSRR = 0x0100 << 16;             //Reset PC8=0 and turn off blue LED
 		GPIOC->BSRR = 0x0200;                   //Set PC9=1 and turn on green LED
-		count++;                                //Increment counter
-		if ( count > 9 ) {       //Cycle back to 0 if incrementing
-			count = 0;
-		}
+		counter[0]++;                                //Increment counter
+		counter[1]--;
 	} else {                                    //sw2==!0? decrement
 	    GPIOC->BSRR = 0x0200 << 16;             //Reset PC9=0 and turn off green LED
 	    GPIOC->BSRR = 0x0100;                   //Set PC8=1 and turn on blue LED
-	    count--;                                //decrement counter
-	    if ( count < 0 ) {       //Cycle back to 9 if decrementing
-	    	count = 9;
-	    }
+	    counter[0]--;                                //decrement counter[0]er
+			counter[1]++;
 	}
-	GPIOC->ODR = count;                        //Update PC3-PC0 output to match count
+	for (int i = 0; i < 2; i++) {
+			if ( counter[i] > 9 ) {       //Cycle back to 0 if incrementing
+				counter[i] = 0;
+			}
+			if ( counter[i] < 0 ) {
+				counter[i] = 9;
+			}
+		}
+	char output = counter[0] | ( counter[1] << 4 );
+	GPIOC->ODR = output;                        //Update PC3-PC0 output to match counter[0]
 }
 /*----------------------------------------------------------*/
 /* Delay function - do nothing for about 1 second */
@@ -61,8 +67,8 @@ int main(void) {
 	/* Configure PC3-PC0 as output pins to drive virtual LEDs */
 	RCC->AHBENR |= 0x04;           // Enable GPIOC clock (bit 2) 
 	GPIOC->MODER &= ~(0x000000FF); // Clear PC3-PC0 mode bits 
-	GPIOC->MODER |= (0x00000055);  // General purpose output mode
-	GPIOC->BSRR = 0x000F << 16;    // Reset PC3-PC0 output bits to 0
+	GPIOC->MODER |= (0x00005555);  // General purpose output mode
+	GPIOC->BSRR = 0x00FF << 16;    // Reset PC3-PC0 output bits to 0
 	   
 	/* Configure PC8,PC9 as output pins to drive LEDs */
 	GPIOC->MODER &= ~(0x000F0000); // Clear PC9-PC8 mode bits
