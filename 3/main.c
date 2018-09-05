@@ -28,8 +28,7 @@ void counting (unsigned char *sw2) {
 	    	count = 9;
 	    }
 	}
-	GPIOC->BSRR = 0x000F << 16;                 //Reset PC3-PC0 output bits to 0
-	GPIOC->ODR |= count;                        //Update PC3-PC0 output to match count
+	GPIOC->ODR = count;                        //Update PC3-PC0 output to match count
 }
 /*----------------------------------------------------------*/
 /* Delay function - do nothing for about 1 second */
