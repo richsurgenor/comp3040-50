@@ -6,55 +6,65 @@
 
 #include "STM32L1xx.h" /* Microcontroller information */
 #include "interrupt_handler.h"
+#include "common.h"
+
+typedef enum {
+	COUNTING_UP = 1,
+	COUNTING_DOWN = 0
+}COUNTING_DIRECTION;
+
+typedef struct {
+		unsigned int count : 4;
+		unsigned int direction : 1;
+		unsigned int speed : 16;
+} counter;
 
 /* Define global variables */
-signed char counter[2];
+counter counters[] = {
+	{ .count = 0, .direction = COUNTING_UP, .speed = 1000 },
+	{ .count = 0, .direction = COUNTING_UP, .speed = 500}
+};
+
+#define COUNTERS_SIZE (uint16_t) 2
+
+volatile unsigned char sw1 = 0; //state of sw1 (PA0)
+volatile unsigned char sw2 = 0; //state of sw2 (PA1)
+
+void update_counters(int ctr) {
+	char output = counters[ctr].count << ctr*4 ;
+	GPIOC->ODR = output;                        //Update PC3-PC0 output to match counter[0]
+}
 
 /*---------------------------------------------------*/
 /* counter function - decade up/down counter between 0 & 9 */
 /* Green LED = counting up, Blue LED = counting down */
 /*---------------------------------------------------*/
-void counting (unsigned char *sw2) {
+void counting () {
 	// This needs to be reconfigured:
 	
 	// 1. first counter should always be counting 0-9
 	// 2. second counter should change increasing to decreasing when PA0 interrupt occurs
 	// 3. second counter should change from decreasing to increasing when PA1 interrupt occurs
 	
-	if (!(*sw2)) { 							     					//sw2 == 0? increment 
-		counter[0]++;                           //Increment counter
-		counter[1]--;
-	} else {                                  //sw2==!0? decrement
-	    counter[0]--;                         //decrement counter
-			counter[1]++;
-	}
-	for (int i = 0; i < 2; i++) {
-			if ( counter[i] > 9 ) {       				//Cycle back to 0 if incrementing
-				counter[i] = 0;
-			}
-			if ( counter[i] < 0 ) {
-				counter[i] = 9;
-			}
+	for (int i = 0; i < COUNTERS_SIZE; i++) {
+		if (counters[i].direction) { 						 
+			counters[i].count++;                           //Increment counter1
+		} else {                                  //sw2==!0? decrement
+			counters[i].count--;                         //decrement counter1
 		}
-	char output = counter[0] | ( counter[1] << 4 );
-	GPIOC->ODR = output;                        //Update PC3-PC0 output to match counter[0]
-}
-/*----------------------------------------------------------*/
-/* Delay function - do nothing for about 0.5 second */
-/*----------------------------------------------------------*/
-void delay () {
-	int i,j,n;
-	for (j=0; j<133000; j++) { //inner loop
-		n = j; //dummy operation for single-step test
-	} //do nothing
-}
 
-//delay in ms
-void ms_delay (int ms) {
-	int i,j,n;
-	for (j=0; j<266*ms; j++) { //inner loop
-		n = j; //dummy operation for single-step test
-	} //do nothing
+		update_counters(i);
+		//TEMPORARY
+		
+		if ( counters[i].count > 9 ) {       				//Cycle back to 0 if incrementing
+					counters[i].count = 0;
+		}
+		
+		if ( counters[i].count < 0 ) {
+			counters[i].count = 9;
+		}
+		
+	}
 }
 
 /*---------------------------------------------------*/
@@ -79,24 +89,10 @@ void enable_GPIO(void) {
 	GPIOC->BSRR = 0x0300 << 16;    // Reset PC9-PC8 output bits to 0
 }
 
-void EXTI0_IRQHandler(void) {
-	ms_delay(200); // button needs debouncing
-	GPIOC->ODR ^= 0x0200;                   //Set PC9=1 and turn on green LED
-	
-	// Clear interrupt pending register
-	EXTI->PR |= EXTI_PR_PR0;
-}
 
-void EXTI1_IRQHandler(void) {
-	ms_delay(200); // button needs debouncing
-	GPIOC->ODR ^= 0x0100;                 //Set PC8=1 and turn on blue LED
-	
-	EXTI->PR |= EXTI_PR_PR1;
-}
 
 int event_loop(void) {
-	unsigned char sw1 = 0; //state of sw1 (PA1)
-	unsigned char sw2 = 0; //state of sw2 (PA2)
+
 	
 	/* Endless loop */
 	while (1) {  
@@ -106,7 +102,7 @@ int event_loop(void) {
 		
 		if (sw1 == 0x2) {
 			counting(&sw2);
-			delay();
+			delay(500);
 		}
 	} /* repeat forever */
 } 

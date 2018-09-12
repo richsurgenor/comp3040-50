@@ -1,7 +1,8 @@
 /*====================================================*/
 /* Hunter Walden and Rich Surgenor
-/* ELEC 3040/3050 - Lab 2, Program 1 */
-/* Description: counter[0]s up or down depending on PA1-2 and outputs counter[0] on PC3-0
+/* ELEC 3040/3050 - Lab 3, Program 1 */
+/* Description: 2 counters up or down in opposite directions depending on PA1-2 
+/* and outputs counter[0] on PC3-0 and counter[1] on PC4-7
 /*====================================================*/
 #include "STM32L1xx.h" /* Microcontroller information */
 
@@ -10,11 +11,11 @@ signed char counter[2];
 //igned char counter[0]
 
 /*---------------------------------------------------*/
-/* counter[0]er function - decade up/down counter[0]er between 0 & 9 */
-/* Green LED = counter[0]ing up, Blue LED = counter[0]ing down */
+/* counting function - 2 decade up/down counters between 0 & 9 in opp directions*/
+/* Green LED = counter[0] up, counter[1] down    Blue LED = counter[0] down, counter[1] up */
 /*---------------------------------------------------*/
 void counting (unsigned char *sw2) {
-	if (!(*sw2)) { 							     //sw2 == 0? increment 
+	if (!(*sw2)) { 							   				  //sw2 == 0? increment 
 		GPIOC->BSRR = 0x0100 << 16;             //Reset PC8=0 and turn off blue LED
 		GPIOC->BSRR = 0x0200;                   //Set PC9=1 and turn on green LED
 		counter[0]++;                                //Increment counter
@@ -41,7 +42,7 @@ void counting (unsigned char *sw2) {
 /*----------------------------------------------------------*/
 void delay () {
 	int i,j,n;
-	for (j=0; j<1000; j++) { //inner loop
+	for (j=0; j<100000; j++) { //inner loop
 		n = j; //dummy operation for single-step test
 	} //do nothing
 }
