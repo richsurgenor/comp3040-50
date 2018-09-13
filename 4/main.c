@@ -148,11 +148,11 @@ int event_loop(void) {
 	
 	/* Endless loop */
 	while (1) {  
+			delay(500);
 			counting0();
 			delay(500);
 			counting1();
-		  counting0();
-			delay(500);
+		  	counting0();
 		
 	} /* repeat forever */
 } 
