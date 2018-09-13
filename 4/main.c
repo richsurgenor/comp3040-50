@@ -46,12 +46,15 @@ void EXTI1_IRQHandler(void) {
 }
 
 
-void update_counters(int ctr) {
-	int current = 0x0300;
-	current |= GPIOC->ODR;
-	int output = counters[ctr].count << ctr*4 ;
-	output  |= current;
-	GPIOC->ODR = output;                        //Update PC3-PC0 output to match counter[0]
+void update_counters() {
+	uint16_t output = 0;
+	output |= (GPIOC->ODR & 0x0300); // keep status LED's states
+	
+	for (int i = 0; i < COUNTERS_SIZE; i++) {
+		output |= counters[i].count << i*4;                    
+	}
+	
+	GPIOC->ODR = output;  
 }
 
 /*---------------------------------------------------*/
@@ -64,7 +67,7 @@ void counting0 () {
 	if ( counters[0].count > 9 ) {       				//Cycle back to 0 if incrementing
 					counters[0].count = 0;
 		}
-	update_counters(0);
+	update_counters();
 }
 
 void counting1 () {
@@ -83,7 +86,7 @@ void counting1 () {
 		if ( counters[1].count < 0 ) {
 			counters[1].count = 9;
 		}
-		update_counters(1);
+		update_counters();
 }
 	
 //void counting () {
