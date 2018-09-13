@@ -68,6 +68,7 @@ void counting0 () {
 					counters[0].count = 0;
 		}
 	update_counters();
+	delay(500);
 }
 
 void counting1 () {
@@ -87,6 +88,7 @@ void counting1 () {
 			counters[1].count = 9;
 		}
 		update_counters();
+		counting0();
 }
 	
 //void counting () {
@@ -148,11 +150,8 @@ int event_loop(void) {
 	
 	/* Endless loop */
 	while (1) {  
-	 
 			counting0();
-			delay(500);
 			counting1();
-			delay(500);	
 	} /* repeat forever */
 } 
 
