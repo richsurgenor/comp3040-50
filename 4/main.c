@@ -48,7 +48,7 @@ void EXTI1_IRQHandler(void) {
 
 void update_counters(int ctr) {
 	int current = 0x0300;
-	current &= GPIOC->ODR;
+	current |= GPIOC->ODR;
 	int output = counters[ctr].count << ctr*4 ;
 	output  |= current;
 	GPIOC->ODR = output;                        //Update PC3-PC0 output to match counter[0]
