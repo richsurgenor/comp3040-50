@@ -8,13 +8,16 @@
 #include "interrupt_handler.h"
 #include "common.h"
 
+
+
+
 typedef enum {
 	COUNTING_UP = 1,
 	COUNTING_DOWN = 0
 }COUNTING_DIRECTION;
 
 typedef struct {
-		unsigned int count : 4;
+		signed int count : 4;
 		unsigned int direction : 1;
 		unsigned int speed : 16;
 } counter;
@@ -27,11 +30,29 @@ counter counters[] = {
 
 #define COUNTERS_SIZE (uint16_t) 2
 
-volatile unsigned char sw1 = 0; //state of sw1 (PA0)
-volatile unsigned char sw2 = 0; //state of sw2 (PA1)
+void EXTI0_IRQHandler(void) {
+	delay(200); // button needs debouncing
+	GPIOC->ODR ^= 0x0100;                   //Set PC8=1 and turn on blue LED
+	counters[1].count = COUNTING_DOWN;
+	
+	// Clear interrupt pending register
+	EXTI->PR |= EXTI_PR_PR0;
+}
+
+void EXTI1_IRQHandler(void) {
+	delay(200); // button needs debouncing
+	GPIOC->ODR ^= 0x0200;                 //Set PC9=1 and turn on green LED
+	counters[1].count = COUNTING_UP;
+	
+	EXTI->PR |= EXTI_PR_PR1;
+}
+
 
 void update_counters(int ctr) {
-	char output = counters[ctr].count << ctr*4 ;
+	int current = 0x0300;
+	current &= GPIOC->ODR;
+	int output = counters[ctr].count << ctr*4 ;
+	output  |= current;
 	GPIOC->ODR = output;                        //Update PC3-PC0 output to match counter[0]
 }
 
@@ -39,33 +60,64 @@ void update_counters(int ctr) {
 /* counter function - decade up/down counter between 0 & 9 */
 /* Green LED = counting up, Blue LED = counting down */
 /*---------------------------------------------------*/
-void counting () {
+
+void counting0 () {
+	counters[0].count++;
+	if ( counters[0].count > 9 ) {       				//Cycle back to 0 if incrementing
+					counters[0].count = 0;
+		}
+	update_counters(0);
+}
+
+void counting1 () {
+	if (counters[1].direction) { 						 
+			counters[1].count++;                           //Increment counter1
+		} else {                                  //sw2==!0? decrement
+			counters[1].count--;                         //decrement counter1
+		}
+
+		
+		
+		if ( counters[1].count > 9 ) {       				//Cycle back to 0 if incrementing
+					counters[1].count = 0;
+		}
+		
+		if ( counters[1].count < 0 ) {
+			counters[1].count = 9;
+		}
+		update_counters(1);
+		counting0();
+}
+	
+//void counting () {
 	// This needs to be reconfigured:
 	
 	// 1. first counter should always be counting 0-9
 	// 2. second counter should change increasing to decreasing when PA0 interrupt occurs
 	// 3. second counter should change from decreasing to increasing when PA1 interrupt occurs
 	
-	for (int i = 0; i < COUNTERS_SIZE; i++) {
-		if (counters[i].direction) { 						 
-			counters[i].count++;                           //Increment counter1
-		} else {                                  //sw2==!0? decrement
-			counters[i].count--;                         //decrement counter1
-		}
+// for (int i = 0; i < COUNTERS_SIZE; i++) {
+//		if (counters[i].direction) { 						 
+//			counters[i].count++;                           //Increment counter1
+//		} else {                                  //sw2==!0? decrement
+//			counters[i].count--;                         //decrement counter1
+//		}
 
-		update_counters(i);
+		
+		
+//		if ( counters[i].count > 9 ) {       				//Cycle back to 0 if incrementing
+//					counters[i].count = 0;
+//		}
+		
+//		if ( counters[i].count < 0 ) {
+//			counters[i].count = 9;
+//		}
+		
+//		update_counters(i);
 		//TEMPORARY
-		
-		if ( counters[i].count > 9 ) {       				//Cycle back to 0 if incrementing
-					counters[i].count = 0;
-		}
-		
-		if ( counters[i].count < 0 ) {
-			counters[i].count = 9;
-		}
-		
-	}
-}
+//	}
+	
+//}
 
 /*---------------------------------------------------*/
 /* Initialize GPIO pins used in the program */
@@ -97,13 +149,10 @@ int event_loop(void) {
 	/* Endless loop */
 	while (1) {  
 	 
-		sw1 = GPIOA->IDR & 0x2; //Read GPIOA inputs and mask all but bit 1	 
-		sw2 = GPIOA->IDR & 0x4; //Read GPIOA inputs and mask all but bit 2
-		
-		if (sw1 == 0x2) {
-			counting(&sw2);
+			counting0();
 			delay(500);
-		}
+			counting1();
+			delay(500);	
 	} /* repeat forever */
 } 
 

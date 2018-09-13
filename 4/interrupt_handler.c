@@ -1,3 +1,4 @@
+
 #include "interrupt_handler.h"
 #include "common.h"
 
@@ -41,18 +42,5 @@ void init_interrupts(volatile uint32_t *SYSCFG_EXTICR) {
 	NVIC_SetPriority(EXTI1_IRQn, 1);
 }
 
-void EXTI0_IRQHandler(void) {
-	delay(200); // button needs debouncing
-	GPIOC->ODR ^= 0x0100;                   //Set PC8=1 and turn on blue LED
-	
-	// Clear interrupt pending register
-	EXTI->PR |= EXTI_PR_PR0;
-}
 
-void EXTI1_IRQHandler(void) {
-	delay(200); // button needs debouncing
-	GPIOC->ODR ^= 0x0200;                 //Set PC9=1 and turn on green LED
-	
-	EXTI->PR |= EXTI_PR_PR1;
-}
 
