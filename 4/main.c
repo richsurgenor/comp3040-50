@@ -9,15 +9,13 @@
 #include "common.h"
 
 
-
-
 typedef enum {
 	COUNTING_UP = 1,
 	COUNTING_DOWN = 0
 }COUNTING_DIRECTION;
 
 typedef struct {
-		signed int count : 4;
+		signed int count : 5;
 		unsigned int direction : 1;
 		unsigned int speed : 16;
 } counter;
@@ -33,7 +31,7 @@ counter counters[] = {
 void EXTI0_IRQHandler(void) {
 	delay(200); // button needs debouncing
 	GPIOC->ODR ^= 0x0100;                   //Set PC8=1 and turn on blue LED
-	counters[1].count = COUNTING_DOWN;
+	counters[1].direction = COUNTING_DOWN;
 	
 	// Clear interrupt pending register
 	EXTI->PR |= EXTI_PR_PR0;
@@ -42,7 +40,7 @@ void EXTI0_IRQHandler(void) {
 void EXTI1_IRQHandler(void) {
 	delay(200); // button needs debouncing
 	GPIOC->ODR ^= 0x0200;                 //Set PC9=1 and turn on green LED
-	counters[1].count = COUNTING_UP;
+	counters[1].direction = COUNTING_UP;
 	
 	EXTI->PR |= EXTI_PR_PR1;
 }
@@ -86,7 +84,6 @@ void counting1 () {
 			counters[1].count = 9;
 		}
 		update_counters(1);
-		counting0();
 }
 	
 //void counting () {
