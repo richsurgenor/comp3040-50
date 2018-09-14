@@ -8,34 +8,33 @@
 
 /* Define global variables */
 signed char counter[2];
-//igned char counter[0]
 
 /*---------------------------------------------------*/
 /* counting function - 2 decade up/down counters between 0 & 9 in opp directions*/
 /* Green LED = counter[0] up, counter[1] down    Blue LED = counter[0] down, counter[1] up */
 /*---------------------------------------------------*/
 void counting (unsigned char *sw2) {
-	if (!(*sw2)) { 							   				  //sw2 == 0? increment 
+	if (!(*sw2)) { 				        //sw2 == 0? increment 
 		GPIOC->BSRR = 0x0100 << 16;             //Reset PC8=0 and turn off blue LED
 		GPIOC->BSRR = 0x0200;                   //Set PC9=1 and turn on green LED
-		counter[0]++;                                //Increment counter
+		counter[0]++;                           //Increment counter
 		counter[1]--;
-	} else {                                    //sw2==!0? decrement
-	    GPIOC->BSRR = 0x0200 << 16;             //Reset PC9=0 and turn off green LED
-	    GPIOC->BSRR = 0x0100;                   //Set PC8=1 and turn on blue LED
-	    counter[0]--;                                //decrement counter[0]er
+	} else {                                        //sw2==!0? decrement
+	    GPIOC->BSRR = 0x0200 << 16;                 //Reset PC9=0 and turn off green LED
+	    GPIOC->BSRR = 0x0100;                       //Set PC8=1 and turn on blue LED
+	    counter[0]--;                               //decrement counter[0]er
 			counter[1]++;
 	}
 	for (int i = 0; i < 2; i++) {
-			if ( counter[i] > 9 ) {       //Cycle back to 0 if incrementing
-				counter[i] = 0;
-			}
-			if ( counter[i] < 0 ) {
-				counter[i] = 9;
-			}
+		if ( counter[i] > 9 ) {                 //Cycle back to 0 if incrementing
+			counter[i] = 0;
 		}
-	char output = counter[0] | ( counter[1] << 4 );
-	GPIOC->ODR = output;                        //Update PC3-PC0 output to match counter[0]
+		if ( counter[i] < 0 ) {
+			counter[i] = 9;
+		}
+	}
+	char output = counter[0] | ( counter[1] << 4 );  //Get counter[0] while conserving counter[1]
+	GPIOC->ODR = output;                             //Update ODR
 }
 /*----------------------------------------------------------*/
 /* Delay function - do nothing for about 1 second */
@@ -46,11 +45,10 @@ void delay () {
 		n = j; //dummy operation for single-step test
 	} //do nothing
 }
+
 /*------------------------------------------------*/
 /* Main program */
 /*------------------------------------------------*/
-
-
 int main(void) {
 	unsigned char sw1 = 0; //state of sw1 (PA1)
 	unsigned char sw2 = 0; //state of sw2 (PA2)
