@@ -20,7 +20,8 @@ interrupt signals EXTI0 and EXTI1*/
    does this in the NVIC as well.
  */
 // TODO: make more generic
-void init_interrupts(volatile uint32_t *SYSCFG_EXTICR) { 
+void init_interrupts(volatile uint32_t *SYSCFG_EXTICR) 
+{ 
 	//SystemInit();
 	//RCC_APB2ENR_SYSCFGEN
 	__enable_irq();
@@ -48,7 +49,8 @@ void init_interrupts(volatile uint32_t *SYSCFG_EXTICR) {
 /* EXTI0 Interrupt Handler 
  * Switches direction of counter[1] to count down, toggles blue LED 
  */
-void EXTI0_IRQHandler(void) {
+void EXTI0_IRQHandler(void) 
+{
 	delay(200); // button needs debouncing
 	GPIOC->ODR ^= 0x0100; // //Set PC8=1 and turn on blue LED              
 	counters[1].direction = COUNTING_DOWN;
@@ -60,7 +62,8 @@ void EXTI0_IRQHandler(void) {
 /* EXTI1 Interrupt Handler 
  * Switches direction of counter[1] to count up, toggles green LED 
  */
-void EXTI1_IRQHandler(void) {
+void EXTI1_IRQHandler(void) 
+{
 	delay(200); // button needs debouncing
 	GPIOC->ODR ^= 0x0200; //Set PC9=1 and turn on green LED
 	counters[1].direction = COUNTING_UP;
