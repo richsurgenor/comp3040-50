@@ -13,4 +13,6 @@ typedef enum
 */
 
 void init_interrupts(volatile uint32_t *SYSCFG_EXTICR);
+void EXTI0_IRQHandler(void);
+void EXTI1_IRQHandler(void);
   

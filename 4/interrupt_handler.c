@@ -16,6 +16,9 @@ All paths must be cleared for signal to be processed correctly.
 /*For lab 4 specifically: Two GPIO pins, PA0 and PA1, are to be configured as external
 interrupt signals EXTI0 and EXTI1*/
 
+/* Unblocks CPU signals from PA0 and PA1 specifically, and then
+   does this in the NVIC as well.
+ */
 // TODO: make more generic
 void init_interrupts(volatile uint32_t *SYSCFG_EXTICR) { 
 	//SystemInit();
@@ -40,6 +43,29 @@ void init_interrupts(volatile uint32_t *SYSCFG_EXTICR) {
 
 	NVIC_SetPriority(EXTI0_IRQn, 1);
 	NVIC_SetPriority(EXTI1_IRQn, 1);
+}
+
+/* EXTI0 Interrupt Handler 
+ * Switches direction of counter[1] to count down, toggles blue LED 
+ */
+void EXTI0_IRQHandler(void) {
+	delay(200); // button needs debouncing
+	GPIOC->ODR ^= 0x0100; // //Set PC8=1 and turn on blue LED              
+	counters[1].direction = COUNTING_DOWN;
+	
+	// Clear interrupt pending register
+	EXTI->PR |= EXTI_PR_PR0;
+}
+
+/* EXTI1 Interrupt Handler 
+ * Switches direction of counter[1] to count up, toggles green LED 
+ */
+void EXTI1_IRQHandler(void) {
+	delay(200); // button needs debouncing
+	GPIOC->ODR ^= 0x0200; //Set PC9=1 and turn on green LED
+	counters[1].direction = COUNTING_UP;
+	
+	EXTI->PR |= EXTI_PR_PR1;
 }
 
 

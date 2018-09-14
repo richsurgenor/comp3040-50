@@ -1,54 +1,30 @@
 /*====================================================
  Hunter Walden and Rich Surgenor
  ELEC 3040/3050 - Lab 4, Program 1 
- Description: counts up or down depending on PA1-2 and outputs counter[0] on PC3-0
+ Description: Enables interrupt-driven input on PA0-1 for changing direction of counter[1]
 ====================================================*/
 
 #include "STM32L1xx.h" /* Microcontroller information */
 #include "interrupt_handler.h"
 #include "common.h"
 
-
-typedef enum {
-	COUNTING_UP = 1,
-	COUNTING_DOWN = 0
-}COUNTING_DIRECTION;
-
-typedef struct {
-		signed int count : 5;
-		unsigned int direction : 1;
-		unsigned int speed : 16;
-} counter;
-
 /* Define global variables */
-counter counters[] = {
+volatile counter counters[] = { // TODO: Move this to main()
 	{ .count = 0, .direction = COUNTING_UP, .speed = 1000 },
 	{ .count = 0, .direction = COUNTING_UP, .speed = 500}
 };
 
 #define COUNTERS_SIZE (uint16_t) 2
+#define COUNTER_HIGH (uint8_t) 9
+#define COUNTER_LOW (uint8_t) 0
 
-void EXTI0_IRQHandler(void) {
-	delay(200); // button needs debouncing
-	GPIOC->ODR ^= 0x0100;                   //Set PC8=1 and turn on blue LED
-	counters[1].direction = COUNTING_DOWN;
-	
-	// Clear interrupt pending register
-	EXTI->PR |= EXTI_PR_PR0;
-}
+//TODO: Move constants out of functions
 
-void EXTI1_IRQHandler(void) {
-	delay(200); // button needs debouncing
-	GPIOC->ODR ^= 0x0200;                 //Set PC9=1 and turn on green LED
-	counters[1].direction = COUNTING_UP;
-	
-	EXTI->PR |= EXTI_PR_PR1;
-}
-
-
-void update_counters() {
+/* Updates the ODR with latest counter/LED information available */
+void update_counters() 
+{
 	uint16_t output = 0;
-	output |= (GPIOC->ODR & 0x0300); // keep status LED's states
+	output |= (GPIOC->ODR & 0x0300); // keep status LEDs' states
 	
 	for (int i = 0; i < COUNTERS_SIZE; i++) {
 		output |= counters[i].count << i*4;                    
@@ -57,73 +33,42 @@ void update_counters() {
 	GPIOC->ODR = output;  
 }
 
-/*---------------------------------------------------*/
-/* counter function - decade up/down counter between 0 & 9 */
-/* Green LED = counting up, Blue LED = counting down */
-/*---------------------------------------------------*/
-
-void counting0 () {
+/* counter function - decade up counter between 0 & 9
+ * Green LED = counting up, Blue LED = counting down */
+void counting0() 
+{
 	counters[0].count++;
-	if ( counters[0].count > 9 ) {       				//Cycle back to 0 if incrementing
+	// Do not allow countere to leave decided range
+	if ( counters[0].count > COUNTER_HIGH ) {
 					counters[0].count = 0;
 		}
 	update_counters();
 }
 
+/* counter function - decade up/down counter between 0 & 9
+ * Green LED = counting up, Blue LED = counting down */
 void counting1 () {
+	// Increment or decrement based on direction of counter
 	if (counters[1].direction) { 						 
-			counters[1].count++;                           //Increment counter1
-		} else {                                  //sw2==!0? decrement
-			counters[1].count--;                         //decrement counter1
-		}
-
-		
-		
-		if ( counters[1].count > 9 ) {       				//Cycle back to 0 if incrementing
-					counters[1].count = 0;
+			counters[1].count++;     
+		} else {
+			counters[1].count--;                       
 		}
 		
-		if ( counters[1].count < 0 ) {
-			counters[1].count = 9;
+		// Do not allow counter to leave decided range
+		if ( counters[1].count > COUNTER_HIGH ) {
+					counters[1].count = COUNTER_LOW;
 		}
+		if ( counters[1].count < COUNTER_LOW ) {
+			counters[1].count = COUNTER_HIGH;
+		}
+		
 		update_counters();
 }
-	
-//void counting () {
-	// This needs to be reconfigured:
-	
-	// 1. first counter should always be counting 0-9
-	// 2. second counter should change increasing to decreasing when PA0 interrupt occurs
-	// 3. second counter should change from decreasing to increasing when PA1 interrupt occurs
-	
-// for (int i = 0; i < COUNTERS_SIZE; i++) {
-//		if (counters[i].direction) { 						 
-//			counters[i].count++;                           //Increment counter1
-//		} else {                                  //sw2==!0? decrement
-//			counters[i].count--;                         //decrement counter1
-//		}
 
-		
-		
-//		if ( counters[i].count > 9 ) {       				//Cycle back to 0 if incrementing
-//					counters[i].count = 0;
-//		}
-		
-//		if ( counters[i].count < 0 ) {
-//			counters[i].count = 9;
-//		}
-		
-//		update_counters(i);
-		//TEMPORARY
-//	}
-	
-//}
-
-/*---------------------------------------------------*/
-/* Initialize GPIO pins used in the program */
-/* PC3-0 = virtual LEDs */
-/* PC8 = blue LED, PC9 = green LED */
-/*---------------------------------------------------*/
+/* Initialize GPIO pins used in the program
+ * PC3-0 = virtual LEDs 
+ * PC8 = blue LED, PC9 = green LED */
 void enable_GPIO(void) {
 	/* Configure PA0 as input pin to read push button */
 	RCC->AHBENR |= 0x01; /* Enable GPIOA clock (bit 0) */
@@ -141,26 +86,22 @@ void enable_GPIO(void) {
 	GPIOC->BSRR = 0x0300 << 16;    // Reset PC9-PC8 output bits to 0
 }
 
-
-
 int event_loop(void) {
-
-	
 	/* Endless loop */
 	while (1) {  
 			delay(500);
 			counting0();
 			delay(500);
 			counting1();
-		  	counting0();
+		  counting0();
 		
 	} /* repeat forever */
 } 
 
 int main(void) {
-	// EXTICR[0] will select EXTI3-0
+	
 	enable_GPIO();
-	init_interrupts(&SYSCFG->EXTICR[0]); 
+	init_interrupts(&SYSCFG->EXTICR[0]); // // EXTICR[0] will select EXTI3-0
 	
 	event_loop();
 }
