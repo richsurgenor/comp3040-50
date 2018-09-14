@@ -3,6 +3,9 @@ common.h
 Common variables/functions throughout the program
 */
 
+#ifndef COMMON_H
+#define COMMON_H
+
 typedef enum {
 	COUNTING_UP = 1,
 	COUNTING_DOWN = 0
@@ -17,3 +20,5 @@ typedef struct {
 void delay (int ms);
 
 extern volatile counter counters[];
+
+#endif

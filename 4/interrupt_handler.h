@@ -1,5 +1,9 @@
 /* interrupt_handler.h
  */
+ 
+#ifndef INTERRUPT_HANDLER_H
+#define INTERRUPT_HANDLER_H
+ 
 #include "STM32L1xx.h" 
 #include "stdint.h"
  
@@ -15,4 +19,6 @@ typedef enum
 void init_interrupts(volatile uint32_t *SYSCFG_EXTICR);
 void EXTI0_IRQHandler(void);
 void EXTI1_IRQHandler(void);
+
+#endif
   
