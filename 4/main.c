@@ -38,38 +38,40 @@ void update_counters()
 void counting0() 
 {
 	counters[0].count++;
-	// Do not allow countere to leave decided range
+	// Do not allow counter to leave decided range
 	if ( counters[0].count > COUNTER_HIGH ) {
-					counters[0].count = 0;
-		}
+		counters[0].count = 0;
+	}
 	update_counters();
 }
 
 /* counter function - decade up/down counter between 0 & 9
  * Green LED = counting up, Blue LED = counting down */
-void counting1 () {
+void counting1 () 
+{
 	// Increment or decrement based on direction of counter
 	if (counters[1].direction) { 						 
-			counters[1].count++;     
-		} else {
-			counters[1].count--;                       
-		}
+		counters[1].count++;     
+	} else {
+		counters[1].count--;                       
+	}
 		
-		// Do not allow counter to leave decided range
-		if ( counters[1].count > COUNTER_HIGH ) {
-					counters[1].count = COUNTER_LOW;
-		}
-		if ( counters[1].count < COUNTER_LOW ) {
-			counters[1].count = COUNTER_HIGH;
-		}
-		
-		update_counters();
+	// Do not allow counter to leave decided range
+	if ( counters[1].count > COUNTER_HIGH ) {
+		counters[1].count = COUNTER_LOW;
+	}
+	if ( counters[1].count < COUNTER_LOW ) {
+		counters[1].count = COUNTER_HIGH;
+	}
+
+	update_counters();
 }
 
 /* Initialize GPIO pins used in the program
  * PC3-0 = virtual LEDs 
  * PC8 = blue LED, PC9 = green LED */
-void enable_GPIO(void) {
+void enable_GPIO(void) 
+{
 	/* Configure PA0 as input pin to read push button */
 	RCC->AHBENR |= 0x01; /* Enable GPIOA clock (bit 0) */
 	GPIOA->MODER &= ~(0x00000003C); /* General purpose input mode */
@@ -86,22 +88,22 @@ void enable_GPIO(void) {
 	GPIOC->BSRR = 0x0300 << 16;    // Reset PC9-PC8 output bits to 0
 }
 
-int event_loop(void) {
+int event_loop(void) 
+{
 	/* Endless loop */
 	while (1) {  
-			delay(500);
-			counting0();
-			delay(500);
-			counting1();
-		  counting0();
-		
+		delay(500);
+		counting0();
+		delay(500);
+		counting1();
+		counting0();
 	} /* repeat forever */
 } 
 
-int main(void) {
-	
+int main(void) 
+{
 	enable_GPIO();
-	init_interrupts(&SYSCFG->EXTICR[0]); // // EXTICR[0] will select EXTI3-0
+	init_interrupts(&SYSCFG->EXTICR[0]); // EXTICR[0] will select EXTI3-0
 	
 	event_loop();
 }
