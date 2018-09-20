@@ -33,7 +33,7 @@ location detect(bool* failure)
 
   for (int i = 0; i < COL_SIZE; i++) {
     //All cols low, except  for pin4+i
-    GPIOB->ODR = 1 << 4+i;
+    GPIOB->ODR = 1 << (4+i);
 
     //small delay
     int loops = 50;
