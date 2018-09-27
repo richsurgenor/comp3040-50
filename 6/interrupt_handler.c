@@ -94,4 +94,6 @@ void TIM10_IRQHandler(void)
 			counters[i].current = 0;
 		}
 	}
+	TIM10->SR ^= 0x1;
+	NVIC_ClearPendingIRQ(TIM10_IRQn);
 }
