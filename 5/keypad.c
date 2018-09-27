@@ -33,7 +33,8 @@ location detect(bool* failure)
 
   for (int i = 0; i < COL_SIZE; i++) {
     //All cols low, except  for pin4+i
-    GPIOB->ODR = 1 << (4+i);
+		GPIOB->ODR = (0xf << 4);
+    GPIOB->ODR = GPIOB->ODR ^ (1 << (4+i));
 
     //small delay
     int loops = 50;
@@ -42,7 +43,7 @@ location detect(bool* failure)
     for (int j = 0; j < ROW_SIZE; j++) {
 
       // if row(j), or pin(j) is low, the button on col(i)row(j) is pressed.
-      if ( !GPIOB->IDR & (1 << j) ) {
+      if ( !(GPIOB->IDR & (1 << j)) ) {
           loc.col=i;
           loc.row=j;
           return loc;

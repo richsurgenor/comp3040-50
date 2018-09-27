@@ -14,10 +14,10 @@ Common variables/functions throughout the program
 #define COUNTER_HIGH (uint8_t) 9
 #define COUNTER_LOW (uint8_t) 0
 
-#define GREEN_LED (uint8_t) 0x0200
-#define BLUE_LED (uint8_t) 0x0100
+#define GREEN_LED (uint16_t) 0x0200
+#define BLUE_LED (uint16_t) 0x0100
 
-#define COUNTER_0_DELAY (uint8_t) 1000 // in miliseconds
+#define COUNTER_0_DELAY (uint16_t) 1000 // in miliseconds
 
 #define PULLUP (uint8_t) 0x01
 #define PULLDOWN uint8_t 0x10

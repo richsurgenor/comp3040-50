@@ -11,7 +11,7 @@ keypad.h
 
 #define COL_SIZE (uint8_t) 4
 #define ROW_SIZE (uint8_t) 4
-#define SECONDS_TO_DISPLAY_KEYPAD_PRESS (uint8_t) 5
+#define SECONDS_TO_DISPLAY_KEYPAD_PRESS (uint8_t) 4
 
 typedef struct {
 		unsigned int row;
