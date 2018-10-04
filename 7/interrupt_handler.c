@@ -64,13 +64,8 @@ void EXTI1_IRQHandler(void)
 
 	uint16_t key = keys[loc.row][loc.col];
 	if (!failure) {
-		if (key == 0xa) {
-			toggle_timers();
-		} else if (key == 0xb && !( TIM10->CR1 & 0x1 ) ) { // is button b pressed and is timer disabled
-			clear_counters();
-			clear_timers();
-		}
 
+		TIM10->CCR1 =  ( TIM10->ARR * (key * 10) ) / 100;
 		GPIOC->ODR = key | ( GPIOC->ODR & GREEN_LED );
 
 		//display_keypad_count = SECONDS_TO_DISPLAY_KEYPAD_PRESS;
@@ -84,7 +79,7 @@ void EXTI1_IRQHandler(void)
 	EXTI->PR |= EXTI_PR_PR1;
 }
 
-void TIM10_IRQHandler(void)
+/*void TIM10_IRQHandler(void)
 {
 	for (int i = 0; i < COUNTERS_SIZE; i++) {
 
@@ -96,4 +91,4 @@ void TIM10_IRQHandler(void)
 	}
 	TIM10->SR ^= 0x1;
 	NVIC_ClearPendingIRQ(TIM10_IRQn);
-}
+}*/

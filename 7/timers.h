@@ -17,6 +17,8 @@ Manages all timers throughout the program
 #define TIM10_PSC (uint32_t) 31
 #define TIM10_ARR (uint32_t) 49999 // 50000 - 1
 
+void set_frequency(uint32_t frequency);
+void enable_timer_GPIO(void);
 void init_timers(void);
 void toggle_timers(void);
 void clear_timers(void);

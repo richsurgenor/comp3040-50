@@ -37,6 +37,7 @@ int main(void)
 {
 	enable_counter_GPIO();
 	enable_keypad_GPIO();
+	enable_timer_GPIO();
 	init_interrupts(&SYSCFG->EXTICR[0]); // EXTICR[0] will select EXTI3-0
 	init_timers();
 	toggle_timers();
