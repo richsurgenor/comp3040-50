@@ -50,7 +50,11 @@ void init_timers(void)
   TIM10->ARR = TIM10_ARR;
   TIM10->PSC = TIM10_PSC;
 
-  TIM10->CCMR1 = 0x5;
+  TIM10->CCMR1 &= ~0x70; //clear Output Compater 1 Mode bits
+  TIM10->CCMR1 |= 0x60; // set to PWM mode 1 (active to "inactive")
+  
+  TIM10->CCER1 &= ~0x03; //clear CC1 Polarity (b1) and CC1 Enable (b0) bits
+  TIM10->CCER1 |= 0x01; //set CC1 Enable bit
 }
 
 void toggle_timers(void)
