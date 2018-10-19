@@ -23,13 +23,13 @@ selected by keypad keys 0 – A.
 //Set frequency in Hz for timer
 void set_frequency(uint32_t frequency)
 {
-    TIM10->ARR = ( (TIMX_CLOCK_SPEED / frequency ) / TIM10->ARR) - 1;
+    TIM10->ARR = ( (TIMX_CLOCK_SPEED / frequency ) / TIM10->PSC) - 1;
 }
 
 void enable_timer_GPIO()
 {
-  GPIOA->MODER &= ~(0x11 << 6); // clear mode of PA6
-  GPIOA->MODER |= (0x10 << 6); // alternate function mode on PA6
+  GPIOA->MODER &= ~0x3000; // clear mode of PA6
+  GPIOA->MODER |= 0x2000; // alternate function mode on PA6
 
   GPIOA->AFR[0] &= ~0x0F000000; //clear AFRL6
   GPIOA->AFR[0] |= 0x03000000; //PA6 = AF2
@@ -53,8 +53,8 @@ void init_timers(void)
   TIM10->CCMR1 &= ~0x70; //clear Output Compater 1 Mode bits
   TIM10->CCMR1 |= 0x60; // set to PWM mode 1 (active to "inactive")
   
-  TIM10->CCER1 &= ~0x03; //clear CC1 Polarity (b1) and CC1 Enable (b0) bits
-  TIM10->CCER1 |= 0x01; //set CC1 Enable bit
+  TIM10->CCER &= ~0x03; //clear CC1 Polarity (b1) and CC1 Enable (b0) bits
+  TIM10->CCER |= 0x01; //set CC1 Enable bit
 }
 
 void toggle_timers(void)

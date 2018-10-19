@@ -65,7 +65,7 @@ void EXTI1_IRQHandler(void)
 	uint16_t key = keys[loc.row][loc.col];
 	if (!failure) {
 
-		TIM10->CCR1 =  ( TIM10->ARR * (key * 10) ) / 100;
+		TIM10->CCR1 =  ( (TIM10->ARR+1) * (key * 10) ) / 100;
 		GPIOC->ODR = key | ( GPIOC->ODR & GREEN_LED );
 
 		//display_keypad_count = SECONDS_TO_DISPLAY_KEYPAD_PRESS;
