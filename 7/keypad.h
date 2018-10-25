@@ -1,5 +1,6 @@
 /*
 keypad.h
+Hndles keypad functions/initialization
 */
 
 #ifndef KEYPAD_H

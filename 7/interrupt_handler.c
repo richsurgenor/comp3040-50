@@ -1,4 +1,3 @@
-
 #include "interrupt_handler.h"
 #include "keypad.h"
 #include "common.h"

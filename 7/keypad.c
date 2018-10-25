@@ -1,3 +1,8 @@
+/*
+keypad.c
+Hndles keypad functions/initialization
+*/
+
 #include "keypad.h"
 #include <math.h>
 

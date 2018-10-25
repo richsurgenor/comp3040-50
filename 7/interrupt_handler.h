@@ -1,5 +1,7 @@
-/* interrupt_handler.h
- */
+/*
+interrupt_handler.h
+Handles interrupt IRQs
+*/
 
 #ifndef INTERRUPT_HANDLER_H
 #define INTERRUPT_HANDLER_H
