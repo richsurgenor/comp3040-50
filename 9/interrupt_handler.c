@@ -78,6 +78,13 @@ void EXTI1_IRQHandler(void)
 	EXTI->PR |= EXTI_PR_PR1;
 }
 
+void TIM11_IRQHandler(void)
+{
+	TIM11->CNT = 0;
+	TIM11->SR ^= 0x3;
+	NVIC_ClearPendingIRQ(TIM11_IRQn);
+}
+
 /*void TIM10_IRQHandler(void)
 {
 	for (int i = 0; i < COUNTERS_SIZE; i++) {

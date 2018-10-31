@@ -31,8 +31,15 @@ void enable_timer_GPIO()
   GPIOA->MODER &= ~0x3000; // clear mode of PA6
   GPIOA->MODER |= 0x2000; // alternate function mode on PA6
 
-  GPIOA->AFR[0] &= ~0x0F000000; //clear AFRL6
-  GPIOA->AFR[0] |= 0x03000000; //PA6 = AF2
+  GPIOA->MODER &= ~0xC000; // clear mode of PA7
+  GPIOA->MODER |= 0x8000; // alternate function mode on PA7
+
+  GPIOA->AFR[0] &= ~0xFF000000; //clear AFRL6 and AFRL7
+  GPIOA->AFR[0] |= 0x33000000; //PA6 = AF3, PA7 = AF3
+
+  /*lab9*/
+  GPIOA->PUPDR &= ~(0x0000C000); // Clear PA7 mode bits
+	GPIOA->PUPDR |= (0x00004000);  // Set PA7 to pull-up resistor
 }
 //cr, ccmr, capture compare register number
 
@@ -43,29 +50,71 @@ void init_timers(void)
   RCC->CFGR |= RCC_CFGR_SW_HSI; // Select HSI as system clock
 
   RCC->APB2ENR |= RCC_APB2ENR_TIM10EN; // enable clock in the RCC
+	RCC->APB2ENR |= RCC_APB2ENR_TIM11EN; // enable clock in the RCC
+	
   //TIM10->DIER |= TIM_DIER_UIE; // enable trigger controller
   NVIC_EnableIRQ(TIM10_IRQn); // enable TIM10 interrupts
   NVIC_SetPriority(TIM10_IRQn, 0);
+	
+	NVIC_EnableIRQ(TIM11_IRQn); // enable TIM11 interrupts
+  NVIC_SetPriority(TIM11_IRQn, 1);
 
   TIM10->ARR = TIM10_ARR;
   TIM10->PSC = TIM10_PSC;
 
   TIM10->CCMR1 &= ~0x70; //clear Output Compater 1 Mode bits
   TIM10->CCMR1 |= 0x60; // set to PWM mode 1 (active to "inactive")
-  
+
   TIM10->CCER &= ~0x03; //clear CC1 Polarity (b1) and CC1 Enable (b0) bits
   TIM10->CCER |= 0x01; //set CC1 Enable bit
+
+  //TIM11 initialization
+  TIM11->ARR = TIM11_ARR;
+  TIM11->PSC = TIM11_PSC;
+
+  TIM11->DIER |= TIM_DIER_CC1IE; // enable trigger controller
+
+  TIM11->CCMR1 &= ~0x3;
+  TIM11->CCMR1 |= 0x1;
+
+  TIM11->CCER &= ~0x03; //clear CC1 Polarity (b1) and CC1 Enable (b0) bits
+  TIM11->CCER |= 0x01; //set CC1 Enable bit
+	
+	//TIM11->CCMR1 |= 0xD0;
 }
 
-void toggle_timers(void)
+void toggle_timers(int timer)
 {
-  TIM10->CR1 ^= 0x01; // bit0 = enable/disable yeet
+  switch(timer) {
+    case 10:
+      TIM10->CR1 ^= 0x01; // bit0 = enable/disable yeet
+      break;
+    case 11:
+      TIM11->CR1 ^= 0x01; // bit0 = enable/disable yeet
+      break;
+  }
 }
 
-void clear_timers(void)
+void clear_timers(int timer)
 {
-  TIM10->CNT = 0;
+  switch(timer) {
+    case 10:
+      TIM10->CNT = 0;
+      break;
+    case 11:
+      TIM11->CNT = 0;
+      break;
+  }
+
   // clear timers or counters?
+}
+
+double get_tachometer_frequency()
+{
+	if (TIM11->CCR1) {
+		return ((double) TIMX_CLOCK_SPEED / TIM11->CCR1) / (1+TIM11->PSC);
+	}
+	return 0;
 }
 
 //Tperiod = (ARR + 1) x (PSC + 1) / (Fclock)

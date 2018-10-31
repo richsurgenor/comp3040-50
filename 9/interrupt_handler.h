@@ -25,5 +25,6 @@ void EXTI0_IRQHandler(void);
 void EXTI1_IRQHandler(void);
 
 void TIM10_IRQHandler(void);
+void TIM11_IRQHandler(void);
 
 #endif

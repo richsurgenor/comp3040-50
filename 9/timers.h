@@ -17,10 +17,16 @@ Manages all timers throughout the program
 #define TIM10_PSC (uint32_t) 31
 #define TIM10_ARR (uint32_t) 49999 // 50000 - 1
 
+#define TIM11_PSC (uint32_t) 5
+#define TIM11_ARR (uint32_t) 0xFFFF // 50000 - 1
+
 void set_frequency(uint32_t frequency);
 void enable_timer_GPIO(void);
 void init_timers(void);
-void toggle_timers(void);
-void clear_timers(void);
+void toggle_timers(int timer);
+void clear_timers(int timer);
+
+/*LAB9*/
+double get_tachometer_frequency(void);
 
 #endif
