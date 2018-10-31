@@ -40,6 +40,8 @@ void count(uint8_t num);
 void update_counters(void);
 void clear_counters(void);
 
+void enable_ADC (void);
+
 extern volatile counter counters[];
 
 #endif

@@ -69,3 +69,19 @@ void clear_counters(void)
 		counters[i].current=0;
 	}
 }
+
+void enable_ADC(void)
+{
+  GPIOA->MODER |= 0xC0; // analog function mode on PA3
+	// corresponds w/ ADC_IN3
+
+	RCC->APB2ENR |= RCC_APB2ENR_ADC1EN;  // 0x200 -- enable ADC1
+	ADC1->CR2 |= ADC_CR2_ADON ; // 0x1
+	while (!(ADC1->SR & ADC_SR_ADONS)); // 0x00000040 , halt program until ADC is enabled
+	ADC1->SQR5 &= ~(0x1F); // (ADC_SQR5_SQ1 = 0x0000001F)
+	ADC1->SQR5 |= 0x3;
+	ADC1->CR2 |= ADC_CR2_SWSTART; // (0x40000000)
+
+	//ADC1->SMPR3 |= 0x600;
+
+}

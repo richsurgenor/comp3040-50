@@ -13,16 +13,20 @@
 //TODO: Move constants out of functions
 /* Updates the ODR with latest counter/LED information available */
 
-double frequency;
-double period;
+double Vin;
+double Vref = 3.3;
+double size = 4095; // (2^12)-1
+
+
 
 int event_loop(void)
 {
 	/* Endless loop */
-	
-	while (1) {
-			frequency = get_tachometer_frequency();
-			period = 1/frequency;
+
+	while (ADC1->SR & ADC_SR_EOC) { // ADC_SR_EOC = 0x2
+
+			Vin = ( ( (double) ADC1->DR ) * Vref ) / size;
+
 		/*delay(COUNTER_0_DELAY);
 		counting0();
 
@@ -37,6 +41,7 @@ int event_loop(void)
 		//update_counters();
 
 	} /* repeat forever */
+	return 0;
 }
 
 int main(void)
@@ -45,9 +50,10 @@ int main(void)
 	init_timers();
 	enable_counter_GPIO();
 	enable_timer_GPIO();
+	enable_ADC();
 	init_interrupts(&SYSCFG->EXTICR[0]); // EXTICR[0] will select EXTI3-0
 	toggle_timers(10);
-	toggle_timers(11);
+	//toggle_timers(11);
 
 	set_frequency(500);
 	TIM10->CCR1 = (TIM10->ARR / 2);
