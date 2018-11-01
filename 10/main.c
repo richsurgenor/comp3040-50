@@ -13,19 +13,28 @@
 //TODO: Move constants out of functions
 /* Updates the ODR with latest counter/LED information available */
 
-double Vin;
+double Vin = 0;
 double Vref = 3.3;
 double size = 4095; // (2^12)-1
-
+double sum = 0;
+double Vin_avg;
 
 
 int event_loop(void)
 {
 	/* Endless loop */
+	
+	for (n=0; n<100; n++)
+	{
+	ADC1->CR2 |= ADC_CR2_SWSTART; // (0x40000000)
 
 	while (ADC1->SR & ADC_SR_EOC) { // ADC_SR_EOC = 0x2
 
-			Vin = ( ( (double) ADC1->DR ) * Vref ) / size;
+		Vin = (( (double) ADC1->DR ) * Vref ) / size;
+		sum = sum + Vin
+	}
+		
+	Vin_avg = sum/n;
 
 		/*delay(COUNTER_0_DELAY);
 		counting0();
