@@ -80,7 +80,6 @@ void enable_ADC(void)
 	while (!(ADC1->SR & ADC_SR_ADONS)); // 0x00000040 , halt program until ADC is enabled
 	ADC1->SQR5 &= ~(0x1F); // (ADC_SQR5_SQ1 = 0x0000001F)
 	ADC1->SQR5 |= 0x3;
-	ADC1->CR2 |= ADC_CR2_SWSTART; // (0x40000000)
 
 	//ADC1->SMPR3 |= 0x600;
 
