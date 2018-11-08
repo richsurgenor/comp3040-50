@@ -49,10 +49,14 @@ void init_timers(void)
   while ((RCC->CR & RCC_CR_HSIRDY) == 0); // Wait until HSI ready
   RCC->CFGR |= RCC_CFGR_SW_HSI; // Select HSI as system clock
 
+  RCC->APB2ENR |= RCC_APB2ENR_TIM9EN; // enable clock in the RCC
   RCC->APB2ENR |= RCC_APB2ENR_TIM10EN; // enable clock in the RCC
 	RCC->APB2ENR |= RCC_APB2ENR_TIM11EN; // enable clock in the RCC
 	
   //TIM10->DIER |= TIM_DIER_UIE; // enable trigger controller
+	NVIC_EnableIRQ(TIM9_IRQn); // enable TIM9 interrupts
+  NVIC_SetPriority(TIM9_IRQn, 2);
+	
   NVIC_EnableIRQ(TIM10_IRQn); // enable TIM10 interrupts
   NVIC_SetPriority(TIM10_IRQn, 0);
 	
@@ -81,11 +85,21 @@ void init_timers(void)
   TIM11->CCER |= 0x01; //set CC1 Enable bit
 	
 	//TIM11->CCMR1 |= 0xD0;
+	
+	//TIM9 initialization
+  TIM9->ARR = TIM9_ARR;
+  TIM9->PSC = TIM9_PSC;
+
+  TIM9->DIER |= TIM_DIER_CC1IE; // enable trigger controller
+
 }
 
 void toggle_timers(int timer)
 {
   switch(timer) {
+		case 9:
+      TIM9->CR1 ^= 0x01; // bit0 = enable/disable yeet
+      break;
     case 10:
       TIM10->CR1 ^= 0x01; // bit0 = enable/disable yeet
       break;
@@ -98,6 +112,9 @@ void toggle_timers(int timer)
 void clear_timers(int timer)
 {
   switch(timer) {
+		case 9:
+      TIM9->CNT = 0;
+      break;
     case 10:
       TIM10->CNT = 0;
       break;

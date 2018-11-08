@@ -4,6 +4,12 @@
 #include "timers.h"
 
 uint8_t display_keypad_count = 0;
+double frequency;
+double period;
+
+//TIM9 interrupts every 10ms->store period data in array->need 2s worth of data->  2s/0.01s=200
+int data[1][200];
+int datarow;
 
 /* Process of interrupt signal on our board:
 1. Interrupt signal comes in on GPIO pin
@@ -76,6 +82,22 @@ void EXTI1_IRQHandler(void)
 
 	GPIOB->ODR &= ~(0xF0); // Clear PB7-4
 	EXTI->PR |= EXTI_PR_PR1;
+}
+
+void TIM9_IRQHandler(void)
+{
+	frequency = get_tachometer_frequency();
+	period = 1/frequency;
+	
+	data[1][datarow] = period;
+	
+	if(datarow = 2000)
+	{
+		datarow = 1;
+	}
+	
+	TIM9->SR ^= 0x1;
+	NVIC_ClearPendingIRQ(TIM9_IRQn);
 }
 
 void TIM11_IRQHandler(void)
