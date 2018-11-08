@@ -1,6 +1,6 @@
 /*====================================================
  Hunter Walden and Rich Surgenor
- ELEC 3040/3050 - Lab 9, Program 1
+ ELEC 3040/3050 - Lab 11, Program 1
  Description: Tachometer
 ====================================================*/
 
