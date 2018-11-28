@@ -14,8 +14,8 @@ Manages all timers throughout the program
 //Tout = (0x2000 × 0x100) ÷ 0x200000 = 1 second
 #define TIMX_CLOCK_SPEED (uint32_t) 16000000  //16MHz
 
-#define TIM9_PSC (uint32_t) 31
-#define TIM9_ARR (uint32_t) 4999 // for period of 10ms
+#define TIM9_PSC (uint32_t) 31//31
+#define TIM9_ARR (uint32_t) 4999//4999 // for period of 10ms
 
 #define TIM10_PSC (uint32_t) 31
 #define TIM10_ARR (uint32_t) 49999 // 50000 - 1

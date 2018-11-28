@@ -12,10 +12,13 @@ double frequency;
 double period;
 
 //TIM9 interrupts every 10ms->store period data in array->need 2s worth of data->  2s/0.01s=200
-int data[200];
-int datacol;
-int domain[200];
-double t = ((TIM9->ARR + 1) * (TIM9->PSC + 1)) / (TIMX_CLOCK_SPEED);
+
+#define size (uint32_t) 200 //2/( ((TIM9_ARR + 1) * (TIM9_PSC + 1)) / (TIMX_CLOCK_SPEED) );
+
+uint16_t data[size];
+int datacol = 0;
+//int domain[20000];
+//double t = ((TIM9_ARR + 1) * (TIM9_PSC + 1)) / (TIMX_CLOCK_SPEED);
 
 /* Process of interrupt signal on our board:
 1. Interrupt signal comes in on GPIO pin
@@ -88,6 +91,7 @@ void EXTI1_IRQHandler(void)
 	memset(data, 0, sizeof data); // clear data array
 	datacol = 0; // reset current index
   toggle_timers(9); //turn on sampler
+	//NVIC_EnableIRQ(TIM9_IRQn);
 	//counters[1].direction = COUNTING_UP;
 
 	GPIOB->ODR &= ~(0xF0); // Clear PB7-4
@@ -96,23 +100,28 @@ void EXTI1_IRQHandler(void)
 
 void TIM9_IRQHandler(void)
 {
-	frequency = get_tachometer_frequency();
-	period = 1/frequency;
-	t = t * datacol;
+//	if (datacol >= 200) {
+//		return;
+//	}
+	
+	//frequency = get_tachometer_frequency();
+	//period = 1/frequency;
+	//t = t * datacol;
 
-	data[datacol] = period;
-	domain[datacol] = t;
+	data[datacol] = TIM11->CCR1; //period;
+	//domain[datacol] = t;
 	datacol++;
-	if(datacol == 200)
+	if(datacol == size)
 	{
-		datacol = 0;
+		//TIM9->SR ^= 0x1;
+		//NVIC_ClearPendingIRQ(TIM9_IRQn);
 		toggle_timers(9); //turn off sampler
+		//NVIC_DisableIRQ(TIM9_IRQn);
+		//TIM9->DIER &= ~0x01;
+	} else {
+		TIM9->SR ^= 0x1;
+		NVIC_ClearPendingIRQ(TIM9_IRQn);
 	}
-
-
-
-	TIM9->SR ^= 0x1;
-	NVIC_ClearPendingIRQ(TIM9_IRQn);
 }
 
 void TIM11_IRQHandler(void)

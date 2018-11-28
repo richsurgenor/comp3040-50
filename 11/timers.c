@@ -55,10 +55,10 @@ void init_timers(void)
 	
   //TIM10->DIER |= TIM_DIER_UIE; // enable trigger controller
 	NVIC_EnableIRQ(TIM9_IRQn); // enable TIM9 interrupts
-  NVIC_SetPriority(TIM9_IRQn, 2);
+  NVIC_SetPriority(TIM9_IRQn, 0);
 	
   NVIC_EnableIRQ(TIM10_IRQn); // enable TIM10 interrupts
-  NVIC_SetPriority(TIM10_IRQn, 0);
+  NVIC_SetPriority(TIM10_IRQn, 2);
 	
 	NVIC_EnableIRQ(TIM11_IRQn); // enable TIM11 interrupts
   NVIC_SetPriority(TIM11_IRQn, 1);
@@ -90,7 +90,7 @@ void init_timers(void)
   TIM9->ARR = TIM9_ARR;
   TIM9->PSC = TIM9_PSC;
 
-  TIM9->DIER |= TIM_DIER_CC1IE; // enable trigger controller
+  TIM9->DIER |= TIM_DIER_UIE; // enable trigger controller
 
 }
 
