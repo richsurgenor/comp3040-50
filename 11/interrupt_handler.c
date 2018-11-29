@@ -19,7 +19,7 @@ uint16_t high_frequency = 500;
 #define LOW_FREQUENCY (uint32_t) 50
 #define HIGH_FREQUENCY (uint32_t) 500
 
-#define ENABLE_CLOSED_LOOP (uint16_t) 1
+uint16_t ENABLE_CLOSED_LOOP = 1;
 
 //TIM9 interrupts every 10ms->store period data in array->need 2s worth of data->  2s/0.01s=200
 
@@ -91,14 +91,17 @@ void EXTI1_IRQHandler(void)
 	uint16_t key = keys[loc.row][loc.col];
 	if (!failure) {
 
-		if(key == 0xf || key == 0xd) {
+		if(key == 0xf) { // toggle stopwatch
 			toggle_timers(6);
+		} else if (key == 0xd) { // clear stopwatch
+			clear_counters();
+		} else if (key == 0xb) { // toggle open/closed loop
+			ENABLE_CLOSED_LOOP ^= 0x1;
 		} else {
 			//TIM10->CCR1 =  ( (TIM10->ARR+1) * (key * 10) ) / 100;
 			
 			if (key == 0) {
 				disable_controller();
-				set_SP(0);
 			} else if (ENABLE_CLOSED_LOOP) {
 				set_SP( (TIMX_CLOCK_SPEED/( (LOW_FREQUENCY*key) ) ) / (1 + TIM11->PSC) );
 				
