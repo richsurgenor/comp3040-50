@@ -38,7 +38,6 @@ int event_loop(void)
 
 	while(true) {
 
-		
 
 	} /* repeat forever */
 }

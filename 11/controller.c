@@ -4,6 +4,8 @@
 #define KI (uint32_t) 2
 #define KD (uint32_t) 2
 
+#define MAX_VALUE (uint16_t) 0xffff
+
 uint16_t SP = 250;
 uint16_t PV = 0;
 
@@ -21,7 +23,13 @@ void control_loop(void)
 	
 	CV = KP*error + KI*integral + KP*derivative;
 	
-	TIM10->CCR1 = TIM10->CCR1 + CV;
+	uint32_t sum = CV + TIM10->CCR1;
+	
+	if ( sum < 0xfff ) {
+		TIM10->CCR1 = TIM10->CCR1 + CV;
+	} else {
+		TIM10->CCR1 = 0xffff;
+	}
 	
 	last_error = error;
 }
@@ -29,6 +37,9 @@ void control_loop(void)
 void set_SP(uint16_t val_SP)
 {
 	SP = val_SP;
+	integral = 0;
+	last_error = 0;
+	derivative = 0;
 }
 
 void set_PV(uint16_t val_PV)
