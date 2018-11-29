@@ -2,6 +2,7 @@
 #include "keypad.h"
 #include "common.h"
 #include "timers.h"
+#include "controller.h"
 
 #include "stdint.h"
 #include "string.h"
@@ -11,11 +12,21 @@ uint8_t display_keypad_count = 0;
 double frequency;
 double period;
 
+
+uint16_t low_frequency = 50;
+uint16_t high_frequency = 500;
+
+#define LOW_FREQUENCY (uint32_t) 50
+#define HIGH_FREQUENCY (uint32_t) 500
+#define SPACING (uint32_t) HIGH_FREQUENCY / LOW_FREQUENCY
+
 //TIM9 interrupts every 10ms->store period data in array->need 2s worth of data->  2s/0.01s=200
 
 #define size (uint32_t) 200 //2/( ((TIM9_ARR + 1) * (TIM9_PSC + 1)) / (TIMX_CLOCK_SPEED) );
 
 uint16_t data[size];
+
+uint16_t old_CCR1;
 int datacol = 0;
 //int domain[20000];
 //double t = ((TIM9_ARR + 1) * (TIM9_PSC + 1)) / (TIMX_CLOCK_SPEED);
@@ -79,10 +90,14 @@ void EXTI1_IRQHandler(void)
 	uint16_t key = keys[loc.row][loc.col];
 	if (!failure) {
 
-
-		TIM10->CCR1 =  ( (TIM10->ARR+1) * (key * 10) ) / 100;
-		GPIOC->ODR = key | ( GPIOC->ODR & GREEN_LED );
-
+		if(key == 0xf || key == 0xd) {
+			toggle_timers(6);
+		} else {
+			//TIM10->CCR1 =  ( (TIM10->ARR+1) * (key * 10) ) / 100;
+			set_SP( (TIMX_CLOCK_SPEED/( (SPACING*key) ) ) / (1 + TIM11->PSC) );
+			
+			GPIOC->ODR = key | ( GPIOC->ODR & GREEN_LED );
+		}
 		//display_keypad_count = SECONDS_TO_DISPLAY_KEYPAD_PRESS;
 	} else {
 		GPIOC->ODR |= BLUE_LED;
@@ -98,6 +113,20 @@ void EXTI1_IRQHandler(void)
 	EXTI->PR |= EXTI_PR_PR1;
 }
 
+void TIM6_IRQHandler(void)
+{
+	for (int i = 0; i < COUNTERS_SIZE; i++) {
+
+		counters[i].current++;
+		if (counters[i].current >= counters[i].period) {
+			count(i);
+			counters[i].current = 0;
+		}
+	}
+	TIM6->SR ^= 0x1;
+	NVIC_ClearPendingIRQ(TIM6_IRQn);
+}
+
 void TIM9_IRQHandler(void)
 {
 //	if (datacol >= 200) {
@@ -108,7 +137,26 @@ void TIM9_IRQHandler(void)
 	//period = 1/frequency;
 	//t = t * datacol;
 
+	
+	//if (TIM11->CCR1 < CERTAIN_AMT) { this may need to be used
+	//	set_PV(x);
+	//}
+
+/*	
+	int difference;
+	difference = TIM11->CCR1 - old_CCR1;
+	if (difference < 0) {
+		difference = difference * -1;
+	}
+	
+	if (difference < x) { // to avoid changing PV when CCR1 jumps wildly */
+
+	set_PV(TIM11->CCR1); // is the CCR1 valid?
+	
 	data[datacol] = TIM11->CCR1; //period;
+	
+	old_CCR1 = TIM11->CCR1;
+	
 	//domain[datacol] = t;
 	datacol++;
 	if(datacol == size)

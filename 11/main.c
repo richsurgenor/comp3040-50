@@ -9,6 +9,7 @@
 #include "keypad.h"
 #include "common.h"
 #include "timers.h"
+#include "controller.h"
 
 //TODO: Move constants out of functions
 /* Updates the ODR with latest counter/LED information available */
@@ -25,7 +26,7 @@ Need to record first 2 seconds of step response in an array
 	3. Repeat until we have about 2 seconds of data (DO NOT OVERFILL ARRAY i.e STOP SAMPLING i.e turn off TIM9?)
 	4. If step response is triggered (i.e. keypad button pressed) then empty array and measure new 2 seconds
 	5. Read Nelson's guide on how to export this data into MATLAB/Excel (Method 2 does this)
-	
+
 Plot data in MATLAB and then use big brain to model a function G(s)
 
 */
@@ -34,9 +35,12 @@ Plot data in MATLAB and then use big brain to model a function G(s)
 int event_loop(void)
 {
 	/* Endless loop */
-	
+
 	while(true) {
-							} /* repeat forever */
+
+		update_counters();
+
+	} /* repeat forever */
 }
 
 int main(void)

@@ -49,6 +49,8 @@ void init_timers(void)
   while ((RCC->CR & RCC_CR_HSIRDY) == 0); // Wait until HSI ready
   RCC->CFGR |= RCC_CFGR_SW_HSI; // Select HSI as system clock
 
+	RCC->APB1ENR |= RCC_APB1ENR_TIM6EN; // enable clock in the RCC
+	
   RCC->APB2ENR |= RCC_APB2ENR_TIM9EN; // enable clock in the RCC
   RCC->APB2ENR |= RCC_APB2ENR_TIM10EN; // enable clock in the RCC
 	RCC->APB2ENR |= RCC_APB2ENR_TIM11EN; // enable clock in the RCC
@@ -62,6 +64,9 @@ void init_timers(void)
 	
 	NVIC_EnableIRQ(TIM11_IRQn); // enable TIM11 interrupts
   NVIC_SetPriority(TIM11_IRQn, 1);
+	
+	NVIC_EnableIRQ(TIM6_IRQn);
+	NVIC_SetPriority(TIM6_IRQn, 3);
 
   TIM10->ARR = TIM10_ARR;
   TIM10->PSC = TIM10_PSC;
@@ -84,6 +89,11 @@ void init_timers(void)
   TIM11->CCER &= ~0x03; //clear CC1 Polarity (b1) and CC1 Enable (b0) bits
   TIM11->CCER |= 0x01; //set CC1 Enable bit
 	
+	//stopwatch
+	TIM6->ARR = TIM6_ARR;
+	TIM6->PSC = TIM6_ARR;
+	TIM6->DIER |= TIM_DIER_UIE;
+	
 	//TIM11->CCMR1 |= 0xD0;
 	
 	//TIM9 initialization
@@ -97,6 +107,9 @@ void init_timers(void)
 void toggle_timers(int timer)
 {
   switch(timer) {
+		case 6:
+			TIM6->CR1 ^= 0x01;
+			break;
 		case 9:
       TIM9->CR1 ^= 0x01; // bit0 = enable/disable yeet
       break;
