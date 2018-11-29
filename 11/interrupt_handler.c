@@ -18,7 +18,8 @@ uint16_t high_frequency = 500;
 
 #define LOW_FREQUENCY (uint32_t) 50
 #define HIGH_FREQUENCY (uint32_t) 500
-#define SPACING (uint32_t) HIGH_FREQUENCY / LOW_FREQUENCY
+
+#define ENABLE_CLOSED_LOOP (uint16_t) 1
 
 //TIM9 interrupts every 10ms->store period data in array->need 2s worth of data->  2s/0.01s=200
 
@@ -94,7 +95,14 @@ void EXTI1_IRQHandler(void)
 			toggle_timers(6);
 		} else {
 			//TIM10->CCR1 =  ( (TIM10->ARR+1) * (key * 10) ) / 100;
-			set_SP( (TIMX_CLOCK_SPEED/( (SPACING*key) ) ) / (1 + TIM11->PSC) );
+			
+			if (key == 0) {
+				set_SP(0);
+			} else if (ENABLE_CLOSED_LOOP) {
+				set_SP( (TIMX_CLOCK_SPEED/( (LOW_FREQUENCY*key) ) ) / (1 + TIM11->PSC) );
+			} else {
+				TIM10->CCR1 = (TIMX_CLOCK_SPEED/( (LOW_FREQUENCY*key) ) ) / (1 + TIM11->PSC);
+			}
 			
 			GPIOC->ODR = key | ( GPIOC->ODR & GREEN_LED );
 		}
@@ -123,6 +131,9 @@ void TIM6_IRQHandler(void)
 			counters[i].current = 0;
 		}
 	}
+	
+	update_counters();
+	
 	TIM6->SR ^= 0x1;
 	NVIC_ClearPendingIRQ(TIM6_IRQn);
 }
@@ -152,6 +163,8 @@ void TIM9_IRQHandler(void)
 	if (difference < x) { // to avoid changing PV when CCR1 jumps wildly */
 
 	set_PV(TIM11->CCR1); // is the CCR1 valid?
+	
+	control_loop();
 	
 	data[datacol] = TIM11->CCR1; //period;
 	

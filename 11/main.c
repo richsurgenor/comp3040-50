@@ -38,7 +38,7 @@ int event_loop(void)
 
 	while(true) {
 
-		update_counters();
+		
 
 	} /* repeat forever */
 }
