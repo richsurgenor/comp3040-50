@@ -97,14 +97,24 @@ void EXTI1_IRQHandler(void)
 			//TIM10->CCR1 =  ( (TIM10->ARR+1) * (key * 10) ) / 100;
 			
 			if (key == 0) {
+				disable_controller();
 				set_SP(0);
 			} else if (ENABLE_CLOSED_LOOP) {
 				set_SP( (TIMX_CLOCK_SPEED/( (LOW_FREQUENCY*key) ) ) / (1 + TIM11->PSC) );
+				
+				// alow compensation if disabled
+				if(!is_controller_enabled()) {
+					enable_controller();
+				}
+				
+				GPIOC->ODR |= GREEN_LED; // GREEN LED ON IF COMPENSATOR ON
+				
 			} else {
 				TIM10->CCR1 = (TIMX_CLOCK_SPEED/( (LOW_FREQUENCY*key) ) ) / (1 + TIM11->PSC);
+				GPIOC->ODR &= GPIOC->ODR & ~GREEN_LED; // GREEN LED OFF IF COMPENSATOR OFF
 			}
 			
-			GPIOC->ODR = key | ( GPIOC->ODR & GREEN_LED );
+			//GPIOC->ODR = key | ( GPIOC->ODR & GREEN_LED );
 		}
 		//display_keypad_count = SECONDS_TO_DISPLAY_KEYPAD_PRESS;
 	} else {
