@@ -13,11 +13,9 @@ double frequency;
 double period;
 
 
-uint16_t low_frequency = 50;
-uint16_t high_frequency = 500;
-
 #define LOW_FREQUENCY (uint32_t) 50
-#define HIGH_FREQUENCY (uint32_t) 500
+
+uint16_t desired_frequency;
 
 uint16_t ENABLE_CLOSED_LOOP = 1;
 
@@ -93,7 +91,7 @@ void EXTI1_IRQHandler(void)
 
 		if(key == 0xf) { // toggle stopwatch
 			toggle_timers(6);
-		} else if (key == 0xd) { // clear stopwatch
+		} else if (key == 0xd && !( TIM6->CR1 & 0x1 ) ) { // clear stopwatch if stopwatch disabled.
 			clear_counters();
 		} else if (key == 0xb) { // toggle open/closed loop
 			ENABLE_CLOSED_LOOP ^= 0x1;
@@ -103,6 +101,7 @@ void EXTI1_IRQHandler(void)
 			if (key == 0) {
 				disable_controller();
 			} else if (ENABLE_CLOSED_LOOP) {
+				desired_frequency = key * LOW_FREQUENCY;
 				set_SP( (TIMX_CLOCK_SPEED/( (LOW_FREQUENCY*key) ) ) / (1 + TIM11->PSC) );
 				
 				// alow compensation if disabled

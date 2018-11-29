@@ -17,6 +17,8 @@ Manages all timers throughout the program
 #define TIM6_PSC (uint32_t) 31
 #define TIM6_ARR (uint32_t) 49999 // 50000 - 1
 
+// Tperiod = (ARR + 1) x (PSC + 1) / (16MHz)
+// Tperiod = (4999 + 1) x (31 + 1) / (16MHz) = 10e-3
 #define TIM9_PSC (uint32_t) 31//31
 #define TIM9_ARR (uint32_t) 4999//4999 // for period of 10ms
 
